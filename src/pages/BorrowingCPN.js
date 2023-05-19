@@ -24,24 +24,38 @@ function BorrowingCPN() {
   const [borrowedDate, setBorrowedDate] = useState(Date.now);
   const [appointmentDate, setAppointmentDate] = useState(Date.now);
   const [status, setStatus] = useState(true);
+  const [borrowers, setBorrowers] = useState([]);
   var borrowing = {}
 
   const loadData = (data) => {
-    axios.post(path + 'Borrower/Search', data)
+    axios.post(path + 'Borrowing/Search', data)
       .then((response) => {
         setBorrowings(response.data.data);
         setCurrentPage(response.data.page)
         setTotalItem(response.data.totalItem)
       })
       .catch((error) => { console.log(error); });
+    axios.get(path + 'Borrower/Get').then(response => {
+      console.log(response.data.name);
+      setBorrowers(response.data);
+    })
   }
 
-  useEffect(() => { loadData(formData) }, []);
+  useEffect(() => {
+    loadData(formData)
+  }, []);
 
   const handlePageClick = ({ selected }) => {
     formData.page = selected + 1;
     loadData(formData)
   };
+
+  const loadName = (id) => {
+    axios.get(path + 'Borrower/Get/' + id).then(response => {
+      console.log(response.data.name);
+      return response.data.name;
+    })
+  }
 
   const openModal = (item) => {
     if (item != null) {
@@ -67,7 +81,7 @@ function BorrowingCPN() {
       appointmentDate: appointmentDate,
       status: status,
     }
-    axios.put(path + 'Book/Put/' + borrowingId, borrowing)
+    axios.put(path + 'Borrowing/Put/' + borrowingId, borrowing)
       .then(response => {
         if (response) {
           const updatedItems = borrowings.map(i => {
@@ -107,11 +121,10 @@ function BorrowingCPN() {
             <thead>
               <tr>
                 <th>STT</th>
-                <th>Họ Tên</th>
-                <th>Giới Tính</th>
-                <th>Email</th>
-                <th>Ngày Đăng Ký</th>
-                <th>Số Dư Tài Khoản</th>
+                <th>Độc giả</th>
+                <th>Ngày mượn</th>
+                <th>Trạng thái</th>
+                <th>Ngày hẹn trả</th>
                 <th>Trạng Thái</th>
                 <th style={{ width: 100 + 'px' }}>Tác vụ</th>
               </tr>
@@ -120,11 +133,10 @@ function BorrowingCPN() {
               {borrowings.map((borrowing, index) => (
                 <tr key={index} >
                   <td>{index + 1}</td>
-                  <td>{borrowing.name}</td>
-                  <td>{borrowing.gender ? 'Nam' : 'Nữ'}</td>
-                  <td>{borrowing.email}</td>
-                  <td>{borrowing.startDay}</td>
-                  <td>{borrowing.accountBalance}</td>
+                  <td>{borrowers.find((borrower) => borrower.id === borrowing.borrowerId)?.name}</td>
+                  <td>{borrowing.borrowedDate ? 'Nam' : 'Nữ'}</td>
+                  <td>{borrowing.appointmentDate}</td>
+                  <td>{borrowing.staffId}</td>
                   <td>{borrowing.status ? 'Available' : 'Not Available'}</td>
                   <td>
                     <button className="update"><i className="fas fa-edit" onClick={() =>
