@@ -123,7 +123,7 @@ function BorrowingCPN() {
                 <th>STT</th>
                 <th>Độc giả</th>
                 <th>Ngày mượn</th>
-                <th>Trạng thái</th>
+                <th>Tình trạng mượn</th>
                 <th>Ngày hẹn trả</th>
                 <th>Trạng Thái</th>
                 <th style={{ width: 100 + 'px' }}>Tác vụ</th>
@@ -134,7 +134,7 @@ function BorrowingCPN() {
                 <tr key={index} >
                   <td>{index + 1}</td>
                   <td>{borrowers.find((borrower) => borrower.id === borrowing.borrowerId)?.name}</td>
-                  <td>{borrowing.borrowedDate ? 'Nam' : 'Nữ'}</td>
+                  <td>{borrowing.borrowedDate}</td>
                   <td>{borrowing.appointmentDate}</td>
                   <td>{borrowing.staffId}</td>
                   <td>{borrowing.status ? 'Available' : 'Not Available'}</td>
@@ -159,7 +159,7 @@ function BorrowingCPN() {
           <div className="modal-body">
             <h2>Thông tin</h2>
             <div className="row">
-              <div className="col-6">
+              <div className="col-4">
                 <div className="form-item">
                   <label>Ngườn mượn</label>
                   <input type="text" value={borrowingId} onChange={(e) => setBorrowerId(e.target.value)} />
@@ -172,8 +172,6 @@ function BorrowingCPN() {
                   <label>Ngày mượn</label>
                   <textarea type="text" value={borrowedDate} onChange={(e) => setBorrowedDate(e.target.value)} />
                 </div>
-              </div>
-              <div className="col-6">
                 <div className="form-item">
                   <label>Ngày hẹn trả</label>
                   <input type="text" value={appointmentDate} onChange={(e) => setAppointmentDate(e.target.value)} />
@@ -181,6 +179,61 @@ function BorrowingCPN() {
                 <div className="form-item">
                   <label>Trạng thái</label>
                   <input type="text" value={status} onChange={(e) => setStatus(e.target.value)} />
+                </div>
+              </div>
+              <div className="col-8">
+                <div className='row'>
+                  <div className='col-4'>
+                    <div className="form-item">
+                      <label>Ngày hẹn trả</label>
+                      <input type="text" value={appointmentDate} onChange={(e) => setAppointmentDate(e.target.value)} />
+                    </div>
+                  </div>
+                  <div className='col-4'>
+                    <div className="form-item">
+                      <label>Ngày hẹn trả</label>
+                      <input type="text" value={appointmentDate} onChange={(e) => setAppointmentDate(e.target.value)} />
+                    </div>
+                  </div>
+                  <div className='col-4'>
+                    <div className="form-item">
+                      <label>Ngày hẹn trả</label>
+                      <input type="text" value={appointmentDate} onChange={(e) => setAppointmentDate(e.target.value)} />
+                    </div>
+                  </div>
+                </div>
+                <button>Thêm</button>
+                <div className="table">
+                  <table className="">
+                    <thead>
+                      <tr>
+                        <th>STT</th>
+                        <th>Độc giả</th>
+                        <th>Ngày mượn</th>
+                        <th>Tình trạng mượn</th>
+                        <th>Ngày hẹn trả</th>
+                        <th>Trạng Thái</th>
+                        <th style={{ width: 100 + 'px' }}>Tác vụ</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {borrowings.map((borrowing, index) => (
+                        <tr key={index} >
+                          <td>{index + 1}</td>
+                          <td>{borrowers.find((borrower) => borrower.id === borrowing.borrowerId)?.name}</td>
+                          <td>{borrowing.borrowedDate}</td>
+                          <td>{borrowing.appointmentDate}</td>
+                          <td>{borrowing.staffId}</td>
+                          <td>{borrowing.status ? 'Available' : 'Not Available'}</td>
+                          <td>
+                            <button className="update"><i className="fas fa-edit" onClick={() =>
+                              openModal(borrowing)}></i></button>
+                            <button className="delete"><i className="fas fa-trash"></i></button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>

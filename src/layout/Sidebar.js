@@ -15,6 +15,8 @@ function ToggleSidebar() {
     }
   }
 function Sidebar() {
+    const user = JSON.parse(localStorage.getItem('user'));
+    const role = user.role;
     return (
         <>
             <div className="sidebar" id="sidebar">
@@ -24,6 +26,12 @@ function Sidebar() {
                         <span>Tổng quan</span>
                     </div>
                     </NavLink>
+                    {role == "ql" &&(
+                    <NavLink to="/staff"><div className="menu-item">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Nhân viên</span>
+                    </div>
+                    </NavLink>)}
                     <NavLink to="/category"><div className="menu-item">
                         <i class="fas fa-user"></i>
                         <span>Loại Sách</span>
