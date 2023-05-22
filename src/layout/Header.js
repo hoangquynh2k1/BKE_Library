@@ -15,7 +15,13 @@ function toggle_mobile() {
   else
     document.getElementById("account-mobile").style.display = "none"
 }
+
 function Header() {
+  const logout = () => {
+    localStorage.removeItem("user");
+  }
+  const user = JSON.parse(localStorage.getItem('user'));
+  console.log(user);
   return (
     <div class="header">
       <div class="logo">
@@ -36,7 +42,7 @@ function Header() {
           <div class="left user" onClick={() => toggle()}>
             <i class="fas fa-user"></i>
             <img src="" class="user-image"></img>
-            <div class="user-name">Hoàng Quý Quỳnh</div>
+            <div class="user-name">{user.value.name}</div>
           </div>
         </div>
         <div className="account-mobile" id="account-mobile">
@@ -45,20 +51,12 @@ function Header() {
               Trang cá nhân
             </div>
           </NavLink>
-          <NavLink to="/">
+          <NavLink >
             <div>
-              Trang cá nhân
-            </div>
-          </NavLink>
-          <NavLink to="/">
-            <div>
-              Trang cá nhân
+              Đăng xuất
             </div>
           </NavLink>
         </div>
-      </div>
-      <div className="nav-mobile">
-        <i class="fas fa-user" onClick={() => toggle_mobile()}></i>
       </div>
       <div className="account" id="account">
         <NavLink to="/">
@@ -66,17 +64,16 @@ function Header() {
             Trang cá nhân
           </div>
         </NavLink>
-        <NavLink to="/">
-          <div>
-            Trang cá nhân
+        <NavLink to="/login">
+          <div onClick={logout}>
+            Đăng xuất
           </div>
         </NavLink>
-        <NavLink to="/">
-          <div>
-            Trang cá nhân
-          </div>
-        </NavLink>
+      </div>      
+      <div className="nav-mobile">
+        <i class="fas fa-user" onClick={() => toggle_mobile()}></i>
       </div>
+
 
     </div>
 

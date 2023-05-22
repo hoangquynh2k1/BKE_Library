@@ -6,7 +6,7 @@ import ReactModal from 'react-modal';
 ReactModal.setAppElement("#root")
 
 function BorrowingCPN() {
-  const path = "https://localhost:44366/api/";
+  const path = "http://greenlibrary.somee.com/api/";
   const [borrowings, setBorrowings] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -24,39 +24,55 @@ function BorrowingCPN() {
   const [borrowedDate, setBorrowedDate] = useState(Date.now);
   const [appointmentDate, setAppointmentDate] = useState(Date.now);
   const [status, setStatus] = useState(true);
-  const [borrowers, setBorrowers] = useState([]);
+  const [details, setDetails] = useState([]);
+  const [name, setName] = useState('');
+  const [borrowingDetailId, setBorrowingDetailId] = useState(0);
+  const [copyId, setCopyId] = useState(0);
+  const [durability, setDurability] = useState(0.0);
+  const [description, setDescription] = useState('');
+  const [returnDate, setReturnDate] = useState('');
+  const [borrowStatus, setBorrowStatus] = useState(0);
   var borrowing = {}
+  var borrowingDetail = {}
 
   const loadData = (data) => {
     axios.post(path + 'Borrowing/Search', data)
+      .then((response) => {
+        setBorrowings(response.data.data);
+        console.log(response.data.data);
+        setCurrentPage(response.data.page)
+        setTotalItem(response.data.totalItem)
+      })
+      .catch((error) => { console.log(error); });
+  }
+  const formatDay = (day) => {
+    let d = new Date(day);
+    let dd = d.getDate() < 10 ? "0" + d.getDate() : d.getDate()
+    let MM = d.getMonth() < 10 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1)
+    return d.getFullYear() + "-" + MM + "-" + dd;
+  }
+  useEffect(() => {
+    axios.post(path + 'Borrowing/Search', formData)
       .then((response) => {
         setBorrowings(response.data.data);
         setCurrentPage(response.data.page)
         setTotalItem(response.data.totalItem)
       })
       .catch((error) => { console.log(error); });
-    axios.get(path + 'Borrower/Get').then(response => {
-      console.log(response.data.name);
-      setBorrowers(response.data);
-    })
-  }
-
-  useEffect(() => {
-    loadData(formData)
   }, []);
 
   const handlePageClick = ({ selected }) => {
     formData.page = selected + 1;
     loadData(formData)
   };
-
-  const loadName = (id) => {
-    axios.get(path + 'Borrower/Get/' + id).then(response => {
-      console.log(response.data.name);
-      return response.data.name;
-    })
+  const resetBorrowBook = () => {
+    setBorrowingDetailId(0)
+    setCopyId(0)
+    setDurability(0)
+    setDescription("")
+    setReturnDate("")
+    setBorrowStatus(0)
   }
-
   const openModal = (item) => {
     if (item != null) {
       setBorrowingId(item.borrowingId)
@@ -65,13 +81,74 @@ function BorrowingCPN() {
       setBorrowedDate(item.borrowedDate)
       setAppointmentDate(item.appointmentDate)
       setStatus(item.status)
+      setDetails(item.details)
+      setName(item.name)
+      resetBorrowBook()
       setShowModal(true)
     }
     else {
+      setBorrowingId(0)
+      setBorrowerId(0)
+      setStaffId(0)
+      setBorrowedDate("")
+      setAppointmentDate("")
+      setStatus(true)
+      setDetails([])
+      setName("")
+      resetBorrowBook()
       setShowModal(true)
     }
   };
-
+  const openCopyModal = (item) => {
+    if (item) {
+      setBorrowingDetailId(item.borrowingDetailId)
+      setCopyId(item.copyId)
+      setDurability(item.durability)
+      setDescription(item.description)
+      setReturnDate(item.returnDate)
+      setBorrowStatus(item.borrowStatus)
+    }
+    else {
+      resetBorrowBook()
+    }
+  }
+  const confirmReturn = () => {
+    borrowingDetail = {
+      borrowingDetailId: borrowingDetailId,
+      borrowerId: borrowerId,
+      copyId: copyId,
+      durability: durability,
+      description: description,
+      borrowStatus: borrowStatus,
+      returnDate: returnDate,
+      status: true
+    }
+    console.log(borrowingDetail);
+    axios.put(path + 'BorrowingDetail/Put/' + borrowingDetailId, borrowingDetail)
+      .then(response => {
+        if (response) {
+          const updatedItems = details.map(i => {
+            if (i.borrowingDetailId === borrowingDetail.borrowingDetailId) {
+              i = borrowingDetail;
+            }
+            return i;
+          });
+          setDetails(updatedItems);
+        }
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  }
+  const count = (list) => {
+    let s = 0;
+    for (let index = 0; index < list.length; index++) {
+      const element = list[index];
+      if (element.borrowStatus == 1)
+        s++
+    }
+    return s;
+  }
   const handSave = () => {
     borrowing = {
       borrowerId: borrowerId,
@@ -133,10 +210,10 @@ function BorrowingCPN() {
               {borrowings.map((borrowing, index) => (
                 <tr key={index} >
                   <td>{index + 1}</td>
-                  <td>{borrowers.find((borrower) => borrower.id === borrowing.borrowerId)?.name}</td>
-                  <td>{borrowing.borrowedDate}</td>
-                  <td>{borrowing.appointmentDate}</td>
-                  <td>{borrowing.staffId}</td>
+                  <td>{borrowing.name}</td>
+                  <td>{formatDay(borrowing.borrowedDate)}</td>
+                  <td>{count(borrowing.details)} / {borrowing.details.length}</td>
+                  <td>{formatDay(borrowing.appointmentDate)}</td>
                   <td>{borrowing.status ? 'Available' : 'Not Available'}</td>
                   <td>
                     <button className="update"><i className="fas fa-edit" onClick={() =>
@@ -160,17 +237,27 @@ function BorrowingCPN() {
             <h2>Thông tin</h2>
             <div className="row">
               <div className="col-4">
-                <div className="form-item">
-                  <label>Ngườn mượn</label>
-                  <input type="text" value={borrowingId} onChange={(e) => setBorrowerId(e.target.value)} />
+                <div className="form-item check-wrap">
+                  <label>Mã độc giả</label>
+                  {borrowerId > 0 ?
+                    <input type="text" disabled value={borrowerId} onChange={(e) => setBorrowerId(e.target.value)} /> :
+                    <>
+                      <input type="text" value={borrowerId} onChange={(e) => setBorrowerId(e.target.value)} />
+                      <i class="fas fa-check checK-item"></i>
+                    </>}
                 </div>
                 <div className="form-item">
-                  <label>Nhân viên</label>
-                  <input type="number" value={staffId} onChange={(e) => setStaffId(e.target.value)} />
+                  <label>Tên độc giả</label>
+                  <input type="text" disabled value={name} onChange={(e) => setName(e.target.value)} />
                 </div>
                 <div className="form-item">
                   <label>Ngày mượn</label>
-                  <textarea type="text" value={borrowedDate} onChange={(e) => setBorrowedDate(e.target.value)} />
+                  {borrowerId > 0 ?
+                    <input type="text" disabled value={borrowedDate} onChange={(e) => setBorrowedDate(e.target.value)} />
+                    :
+                    <>
+                      <input type="text" value={borrowedDate} onChange={(e) => setBorrowedDate(e.target.value)} />
+                    </>}
                 </div>
                 <div className="form-item">
                   <label>Ngày hẹn trả</label>
@@ -184,57 +271,89 @@ function BorrowingCPN() {
               <div className="col-8">
                 <div className='row'>
                   <div className='col-4'>
+                    <div className="form-item check-wrap">
+                      <label>Mã quyển</label>
+                      {copyId > 0 ?
+                        <input type="text" disabled value={copyId} onChange={(e) => setCopyId(e.target.value)} /> :
+                        <>
+                          <input type="text" disabled value={copyId} onChange={(e) => setCopyId(e.target.value)} />
+                          <i class="fas fa-check checK-item"></i>
+                        </>}
+                    </div>
                     <div className="form-item">
-                      <label>Ngày hẹn trả</label>
-                      <input type="text" value={appointmentDate} onChange={(e) => setAppointmentDate(e.target.value)} />
+                      <label>Trạng thái</label>
+                      <select value={borrowStatus} onChange={(e) => setBorrowStatus(e.target.value)}>
+                        <option value={2}>Đã trả</option>
+                        <option value={3}>Làm mất</option>
+                      </select>
                     </div>
                   </div>
                   <div className='col-4'>
                     <div className="form-item">
-                      <label>Ngày hẹn trả</label>
-                      <input type="text" value={appointmentDate} onChange={(e) => setAppointmentDate(e.target.value)} />
+                      <label>Độ mới</label>
+                      <input type="number" max="100" value={durability} onChange={(e) => setDurability(e.target.value)} />
                     </div>
+                    {copyId > 0 ? <div className="form-item">
+                      <label>Ngày trả</label>
+                      <input type="date" value={returnDate} onChange={(e) => setReturnDate(e.target.value)} />
+                    </div> : <></>}
+
                   </div>
                   <div className='col-4'>
                     <div className="form-item">
-                      <label>Ngày hẹn trả</label>
-                      <input type="text" value={appointmentDate} onChange={(e) => setAppointmentDate(e.target.value)} />
+                      <label>Mô tả</label>
+                      <input type="text" value={description} onChange={(e) => setDescription(e.target.value)} />
                     </div>
                   </div>
                 </div>
-                <button>Thêm</button>
-                <div className="table">
+                <div>
+                  <button className="btn pending" onClick={() => openCopyModal()}>Làm mới</button>
+                  <button className="btn done" onClick={() => confirmReturn()}>Xác nhận</button>
+
+                </div>
+                <div className="table table-copy">
                   <table className="">
                     <thead>
                       <tr>
-                        <th>STT</th>
-                        <th>Độc giả</th>
-                        <th>Ngày mượn</th>
-                        <th>Tình trạng mượn</th>
-                        <th>Ngày hẹn trả</th>
-                        <th>Trạng Thái</th>
-                        <th style={{ width: 100 + 'px' }}>Tác vụ</th>
+                        <th style={{ width: '40px', textAlign: 'center' }}>STT</th>
+                        <th style={{ width: 80 + 'px' }}>Bản sao</th>
+                        <th style={{ width: 80 + 'px' }}>Độ mới</th>
+                        <th >Mô tả</th>
+                        <th style={{ width: 160 + 'px' }}>Ngày trả</th>
+                        <th style={{ width: 160 + 'px' }}>Tình trạng mượn</th>
+                        <th style={{ width: 120 + 'px' }}>Tác vụ</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {borrowings.map((borrowing, index) => (
+                      {details.map((detail, index) => (
                         <tr key={index} >
                           <td>{index + 1}</td>
-                          <td>{borrowers.find((borrower) => borrower.id === borrowing.borrowerId)?.name}</td>
-                          <td>{borrowing.borrowedDate}</td>
-                          <td>{borrowing.appointmentDate}</td>
-                          <td>{borrowing.staffId}</td>
-                          <td>{borrowing.status ? 'Available' : 'Not Available'}</td>
-                          <td>
-                            <button className="update"><i className="fas fa-edit" onClick={() =>
-                              openModal(borrowing)}></i></button>
-                            <button className="delete"><i className="fas fa-trash"></i></button>
-                          </td>
+                          <td>{detail.copyId}</td>
+                          <td>{detail.durability}</td>
+                          <td>{detail.description}</td>
+                          <td>{detail.returnDate}</td>
+
+                          {detail.borrowStatus === 1 ?
+                            <>
+                              <td ><button className="info-text pending">Đang mượn</button></td>
+                              <td>
+                                <button className="btn pending" onClick={() => openCopyModal(detail)}>Trả sách</button>
+                              </td>
+                            </>
+                            :
+                            <>
+                              <td><button className="info-text done">Đã trả</button></td>
+                              <td>
+                                {/* <button className="btn pending" ></button> */}
+                              </td>
+                            </>
+                          }
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
+                {borrowerId > 0 ? <button className="btn done">Trả toàn bộ sách</button> : <></>}
               </div>
             </div>
           </div>

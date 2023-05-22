@@ -27,7 +27,7 @@ const Login = ({setIsAuthenticated}) => {
                 else {
                     alert("Thông tin đăng nhập chưa chính xác!")
                 }
-            }, 500)
+            })
             .catch((error) => {
                 console.log(error);
             });

@@ -3,7 +3,6 @@ import React, { Component } from 'react'
 function Home()
 {
         return (
-
             <>
                 <h4 class="title">Tổng quan</h4>
                 <div class="row">
