@@ -7,6 +7,7 @@ ReactModal.setAppElement("#root")
 
 function CategoryCPN() {
   const path = "https://localhost:44366/api/";
+  // const path = "https://localhost:44366/api/";
   var [categorys, setCategorys] = useState([]);
   const [categoryId, setCategoryId] = useState(0);
   const [name, setName] = useState('');
