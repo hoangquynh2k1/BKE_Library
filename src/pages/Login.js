@@ -7,7 +7,7 @@ const Login = ({setIsAuthenticated}) => {
     const { register, handleSubmit, formState: { errors } } = useForm();
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-    const path = "https://localhost:44366/api/";
+    const path = "http://greenlibrary.somee.com/api/";
 
     const onSubmit = async (data) => {
         setLoading(true);

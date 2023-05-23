@@ -6,7 +6,8 @@ import ReactModal from 'react-modal';
 ReactModal.setAppElement("#root")
 
 function BorrowingCPN() {
-  const path = "http://greenlibrary.somee.com/api/";
+  // const path = "http://greenlibrary.somee.com/api/";
+  const path = "https://localhost:44366/api/";
   const [borrowings, setBorrowings] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -34,6 +35,7 @@ function BorrowingCPN() {
   const [borrowStatus, setBorrowStatus] = useState(0);
   var borrowing = {}
   var borrowingDetail = {}
+  var isCreat = false;
 
   const loadData = (data) => {
     axios.post(path + 'Borrowing/Search', data)
@@ -46,10 +48,13 @@ function BorrowingCPN() {
       .catch((error) => { console.log(error); });
   }
   const formatDay = (day) => {
-    let d = new Date(day);
-    let dd = d.getDate() < 10 ? "0" + d.getDate() : d.getDate()
-    let MM = d.getMonth() < 10 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1)
-    return d.getFullYear() + "-" + MM + "-" + dd;
+    if(day)
+    {
+      let d = new Date(day);
+      let dd = d.getDate() < 10 ? "0" + d.getDate() : d.getDate()
+      let MM = d.getMonth() < 10 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1)
+      return d.getFullYear() + "-" + MM + "-" + dd;
+    }
   }
   useEffect(() => {
     axios.post(path + 'Borrowing/Search', formData)
@@ -87,6 +92,7 @@ function BorrowingCPN() {
       setShowModal(true)
     }
     else {
+      isCreat = true
       setBorrowingId(0)
       setBorrowerId(0)
       setStaffId(0)
@@ -115,11 +121,11 @@ function BorrowingCPN() {
   const confirmReturn = () => {
     borrowingDetail = {
       borrowingDetailId: borrowingDetailId,
-      borrowerId: borrowerId,
+      borrowingId: borrowingId,
       copyId: copyId,
       durability: durability,
       description: description,
-      borrowStatus: borrowStatus,
+      borrowStatus: parseInt(borrowStatus, 10),
       returnDate: returnDate,
       status: true
     }
@@ -239,7 +245,7 @@ function BorrowingCPN() {
               <div className="col-4">
                 <div className="form-item check-wrap">
                   <label>Mã độc giả</label>
-                  {borrowerId > 0 ?
+                  {isCreat ?
                     <input type="text" disabled value={borrowerId} onChange={(e) => setBorrowerId(e.target.value)} /> :
                     <>
                       <input type="text" value={borrowerId} onChange={(e) => setBorrowerId(e.target.value)} />
@@ -273,16 +279,17 @@ function BorrowingCPN() {
                   <div className='col-4'>
                     <div className="form-item check-wrap">
                       <label>Mã quyển</label>
-                      {copyId > 0 ?
+                      {isCreat ?
                         <input type="text" disabled value={copyId} onChange={(e) => setCopyId(e.target.value)} /> :
                         <>
-                          <input type="text" disabled value={copyId} onChange={(e) => setCopyId(e.target.value)} />
+                          <input type="text" value={copyId} onChange={(e) => setCopyId(e.target.value)} />
                           <i class="fas fa-check checK-item"></i>
                         </>}
                     </div>
                     <div className="form-item">
                       <label>Trạng thái</label>
                       <select value={borrowStatus} onChange={(e) => setBorrowStatus(e.target.value)}>
+                        <option value={1}></option>
                         <option value={2}>Đã trả</option>
                         <option value={3}>Làm mất</option>
                       </select>
@@ -319,7 +326,7 @@ function BorrowingCPN() {
                         <th style={{ width: 80 + 'px' }}>Bản sao</th>
                         <th style={{ width: 80 + 'px' }}>Độ mới</th>
                         <th >Mô tả</th>
-                        <th style={{ width: 160 + 'px' }}>Ngày trả</th>
+                        <th style={{ width: 180 + 'px' }}>Ngày trả</th>
                         <th style={{ width: 160 + 'px' }}>Tình trạng mượn</th>
                         <th style={{ width: 120 + 'px' }}>Tác vụ</th>
                       </tr>
@@ -331,7 +338,7 @@ function BorrowingCPN() {
                           <td>{detail.copyId}</td>
                           <td>{detail.durability}</td>
                           <td>{detail.description}</td>
-                          <td>{detail.returnDate}</td>
+                          <td>{formatDay(detail.returnDate)}</td>
 
                           {detail.borrowStatus === 1 ?
                             <>

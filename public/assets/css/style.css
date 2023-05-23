@@ -116,7 +116,7 @@ tr:nth-child(even) {}
     background-color: rgba(0, 128, 0, 1);
 }
 .done{
-    background-color: var(--primary-color1);
+    background-color: var(--primary-color);
     color: white;
 }
 .btn.done:hover {
