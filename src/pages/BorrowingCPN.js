@@ -11,12 +11,14 @@ function BorrowingCPN() {
   const [borrowings, setBorrowings] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [dropdownSearch, setDropdownSearch] = useState(1);
   const [totalItem, setTotalItem] = useState(1);
-  const pageSize = 5;
+  const pageSize = 10;
   var formData = {
     page: currentPage,
     pageSize: pageSize,
-    loc: searchQuery
+    loc: searchQuery,
+    dropdown: dropdownSearch
   }
   const [showModal, setShowModal] = useState(false);
   const [borrowingId, setBorrowingId] = useState(0);
@@ -41,7 +43,6 @@ function BorrowingCPN() {
     axios.post(path + 'Borrowing/Search', data)
       .then((response) => {
         setBorrowings(response.data.data);
-        console.log(response.data.data);
         setCurrentPage(response.data.page)
         setTotalItem(response.data.totalItem)
       })
@@ -65,7 +66,24 @@ function BorrowingCPN() {
       })
       .catch((error) => { console.log(error); });
   }, []);
-
+  const onChangeDropdown = (e) => {
+    setDropdownSearch(e.target.value);
+    loadData(formData)
+  }
+  const checkOverdue = (item) => {
+    const currentDate = new Date();
+    const appointmentDate = new Date(item.appointmentDate);
+    if(appointmentDate >= currentDate.setDate(currentDate.getDate() - 3) && count(item.details) > 0
+    && appointmentDate <= currentDate)
+    {
+      return 1;
+    }
+    else if(appointmentDate <= currentDate
+      && count(item.details) > 0){
+        return 2;
+    }
+    return 0;
+  }
   const handlePageClick = ({ selected }) => {
     formData.page = selected + 1;
     loadData(formData)
@@ -191,13 +209,20 @@ function BorrowingCPN() {
         </div>
         <div className="form-value col-6">
           <label>Email</label>
-          <input type="date" value={searchQuery} />
+          <input type="text" value={searchQuery} />
         </div>
         <div className="button-form col-12">
-          <button className="button-search">Tìm kiếm</button>
+          <button className="button-search" onClick={() => loadData(formData)}>Tìm kiếm</button>
         </div>
       </div>
       <button className="add" onClick={() => openModal(null)}>Thêm</button>
+      <select className="dropdown_search" onChange={onChangeDropdown}>
+        <option value={0}></option>
+        <option value={1}>Đang mượn</option>
+        <option value={2}>Đã trả</option>
+        <option value={3}>Available</option>
+        <option value={4}>Unavailable</option>
+      </select>
       <div className="row">
         <div className="table">
           <table className="">
@@ -209,17 +234,18 @@ function BorrowingCPN() {
                 <th>Tình trạng mượn</th>
                 <th>Ngày hẹn trả</th>
                 <th>Trạng Thái</th>
-                <th style={{ width: 100 + 'px' }}>Tác vụ</th>
+                <th style={{ width: 150 + 'px' }}>Tác vụ</th>
               </tr>
             </thead>
             <tbody>
               {borrowings.map((borrowing, index) => (
-                <tr key={index} >
+                <tr key={index} className="table_row">
                   <td>{index + 1}</td>
                   <td>{borrowing.name}</td>
                   <td>{formatDay(borrowing.borrowedDate)}</td>
                   <td>{count(borrowing.details)} / {borrowing.details.length}</td>
-                  <td>{formatDay(borrowing.appointmentDate)}</td>
+                  <td>{formatDay(borrowing.appointmentDate)}-{checkOverdue(borrowing)}</td>
+                  {checkOverdue(borrowing) == 1? "" : ""}
                   <td>{borrowing.status ? 'Available' : 'Not Available'}</td>
                   <td>
                     <button className="update"><i className="fas fa-edit" onClick={() =>

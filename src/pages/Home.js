@@ -1,43 +1,45 @@
-import React, { Component } from 'react'
+import React from 'react'
+import { NavLink } from 'react-router-dom';
 
-function Home()
-{
-        return (
-            <>
-                <h4 class="title">Tổng quan</h4>
-                <div class="row">
-                    <div class="col-6 col-s-12">
-                        <div class="box box-primary">
-                            <div class="box-header">
-                                <h3 class="box-title">Lượt mượn sách</h3>
-                            </div>
-                            <div class="box-body">
-                                <canvas id="areaChart" height="250"></canvas>
-                            </div>
+function Home() {
+    return (
+        <>
+            <div className="body">
+                <div className="home_header">
+                    <img src="assets/img/logo.svg"></img>
+                    <h1>Thư viện Bách khoa Education</h1>
+                </div>
+                <div className="home_content">
+                    <div className="row">
+                        <div className="col-4">
+                            <button>Thêm thông tin mượn sách</button>
                         </div>
-                        <div class="box box-success">
-                            <div class="box-header">
-                                <h3 class="box-title">Doanh thu</h3>
-                            </div>
-                            <div class="box-body">
-                                <canvas id="barChart" height="230"></canvas>
-                            </div>
+                        <div className="col-4">
+                            <button>Thêm thông tin mượn sách</button>
+                        </div>
+                        <div className="col-4">
+                            <button>Thêm thông tin mượn sách</button>
                         </div>
                     </div>
-                    <div class="col-6 col-s-12">
-
-                        <div class="box box-info">
-                            <div class="box-header">
-                                <h3 class="box-title">Lượt truy cập</h3>
+                    <div className="row">
+                        <div className="col-4">
+                            <button>Thêm thông tin mượn sách</button>
+                        </div>
+                        <div className="col-4">
+                            <button>Thêm thông tin mượn sách</button>
+                        </div>
+                        <div className="col-4">
+                            <NavLink to="/borrowing"><div className="menu-item">
+                                <i class="fas fa-user"></i>
+                                <span>Mượn sách</span>
                             </div>
-                            <div class="box-body">
-                                <canvas id="lineChart" height="250"></canvas>
-                            </div>
+                            </NavLink>
                         </div>
                     </div>
                 </div>
-            </>
-        )
+            </div>
+        </>
+    )
 }
 
 export default Home

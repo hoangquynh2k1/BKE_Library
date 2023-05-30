@@ -8,6 +8,7 @@ import CategoryCPN from "./pages/CategoryCPN";
 import BorrowerCPN from "./pages/BorrowerCPN";
 import Home from "./pages/Home";
 import BorrowingCPN from "./pages/BorrowingCPN";
+import DashBoard from "./pages/DashBoard";
 
 function Main() {
   return (
@@ -35,13 +36,17 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login setIsAuthenticated={setIsAuthenticated} />} />
         {isAuthenticated ? (
-          <Route path="" element={<Main />}>
-            <Route path="/" element={<Home />} />
+          <>
+          <Route path="/home" element = {<Home />}></Route>
+          <Route path="" element = {<Home />}></Route>
+          <Route path="/" element={<Main />}>
+            <Route path="/dashboard" element={<DashBoard />} />
             <Route path="/book" element={<BookCPN />} />
             <Route path="/category" element={<CategoryCPN />} />
             <Route path="/borrower" element={<BorrowerCPN />} />
             <Route path="/borrowing" element={<BorrowingCPN />} />
           </Route>
+          </>
         ) : (
           <Route path="*" element={<Login setIsAuthenticated={setIsAuthenticated} />} />
         )}

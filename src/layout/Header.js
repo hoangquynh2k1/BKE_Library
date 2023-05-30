@@ -21,7 +21,6 @@ function Header() {
     localStorage.removeItem("user");
   }
   const user = JSON.parse(localStorage.getItem('user'));
-  console.log(user);
   return (
     <div class="header">
       <div class="logo">

@@ -23,6 +23,11 @@ function Sidebar() {
                 <div className="menu">
                     <NavLink to="/"><div className="menu-item">
                         <i class="fas fa-chart-line"></i>
+                        <span>Home</span>
+                    </div>
+                    </NavLink>
+                    <NavLink to="/dashboard"><div className="menu-item">
+                        <i class="fas fa-chart-line"></i>
                         <span>Tổng quan</span>
                     </div>
                     </NavLink>
