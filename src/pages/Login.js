@@ -35,7 +35,7 @@ const Login = ({setIsAuthenticated}) => {
     return (
         <div className="login-content">
             <div className="login-box">
-                <img src="/assets/img/logo_small.png" alt="" className="logo" />
+                <img src="/assets/img/logo.svg" alt="" className="logo" />
                 <form onSubmit={handleSubmit(onSubmit)} className="login-form">
                     <div>
                         <label htmlFor="username">Username</label>

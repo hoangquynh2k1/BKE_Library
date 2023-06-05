@@ -76,7 +76,7 @@
     border: 2px solid var(--primary-color1);
 }
 .form-item textarea{
-    width: 440px;
+    /* width: 440px; */
     resize: none;
     height: 220px;
 }

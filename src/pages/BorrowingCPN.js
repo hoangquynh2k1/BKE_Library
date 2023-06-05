@@ -49,8 +49,7 @@ function BorrowingCPN() {
       .catch((error) => { console.log(error); });
   }
   const formatDay = (day) => {
-    if(day)
-    {
+    if (day) {
       let d = new Date(day);
       let dd = d.getDate() < 10 ? "0" + d.getDate() : d.getDate()
       let MM = d.getMonth() < 10 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1)
@@ -73,14 +72,13 @@ function BorrowingCPN() {
   const checkOverdue = (item) => {
     const currentDate = new Date();
     const appointmentDate = new Date(item.appointmentDate);
-    if(appointmentDate >= currentDate.setDate(currentDate.getDate() - 3) && count(item.details) > 0
-    && appointmentDate <= currentDate)
-    {
+    if (appointmentDate >= currentDate.setDate(currentDate.getDate() - 3) && count(item.details) > 0
+      && appointmentDate <= currentDate) {
       return 1;
     }
-    else if(appointmentDate <= currentDate
-      && count(item.details) > 0){
-        return 2;
+    else if (appointmentDate <= currentDate
+      && count(item.details) > 0) {
+      return 2;
     }
     return 0;
   }
@@ -98,6 +96,7 @@ function BorrowingCPN() {
   }
   const openModal = (item) => {
     if (item != null) {
+      isCreat = false
       setBorrowingId(item.borrowingId)
       setBorrowerId(item.borrowerId)
       setStaffId(item.staffId)
@@ -182,21 +181,41 @@ function BorrowingCPN() {
       appointmentDate: appointmentDate,
       status: status,
     }
-    axios.put(path + 'Borrowing/Put/' + borrowingId, borrowing)
-      .then(response => {
-        if (response) {
-          const updatedItems = borrowings.map(i => {
-            if (i.borrowingId === borrowing.borrowingId) {
-              i = borrowing;
-            }
-            return i;
-          });
-          setBorrowings(updatedItems);
-        }
-      })
-      .catch(error => {
-        console.log(error);
-      });
+    if (isCreat) {
+      axios.put(path + 'Borrowing/Post/' + borrowingId, borrowing)
+        .then(response => {
+          if (response) {
+            const updatedItems = borrowings.map(i => {
+              if (i.borrowingId === borrowing.borrowingId) {
+                i = borrowing;
+              }
+              return i;
+            });
+            setBorrowings(updatedItems);
+          }
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    }
+    else {
+      axios.put(path + 'Borrowing/Put/' + borrowingId, borrowing)
+        .then(response => {
+          if (response) {
+            const updatedItems = borrowings.map(i => {
+              if (i.borrowingId === borrowing.borrowingId) {
+                i = borrowing;
+              }
+              return i;
+            });
+            setBorrowings(updatedItems);
+          }
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    }
+
   }
 
   return (
@@ -245,12 +264,11 @@ function BorrowingCPN() {
                   <td>{formatDay(borrowing.borrowedDate)}</td>
                   <td>{count(borrowing.details)} / {borrowing.details.length}</td>
                   <td>{formatDay(borrowing.appointmentDate)}-{checkOverdue(borrowing)}</td>
-                  {checkOverdue(borrowing) == 1? "" : ""}
+                  {checkOverdue(borrowing) == 1 ? "" : ""}
                   <td>{borrowing.status ? 'Available' : 'Not Available'}</td>
                   <td>
-                    <button className="update"><i className="fas fa-edit" onClick={() =>
+                    <button className="update"><i className="fas fa-eye" onClick={() =>
                       openModal(borrowing)}></i></button>
-                    <button className="delete"><i className="fas fa-trash"></i></button>
                   </td>
                 </tr>
               ))}
@@ -271,7 +289,7 @@ function BorrowingCPN() {
               <div className="col-4">
                 <div className="form-item check-wrap">
                   <label>Mã độc giả</label>
-                  {isCreat ?
+                  {borrowerId > 0 ?
                     <input type="text" disabled value={borrowerId} onChange={(e) => setBorrowerId(e.target.value)} /> :
                     <>
                       <input type="text" value={borrowerId} onChange={(e) => setBorrowerId(e.target.value)} />
@@ -280,7 +298,9 @@ function BorrowingCPN() {
                 </div>
                 <div className="form-item">
                   <label>Tên độc giả</label>
-                  <input type="text" disabled value={name} onChange={(e) => setName(e.target.value)} />
+                  {borrowerId > 0 ?
+                    <input type="text" disabled value={name} onChange={(e) => setName(e.target.value)} /> :
+                    <input type="text" value={name} onChange={(e) => setName(e.target.value)} />}
                 </div>
                 <div className="form-item">
                   <label>Ngày mượn</label>
@@ -305,7 +325,7 @@ function BorrowingCPN() {
                   <div className='col-4'>
                     <div className="form-item check-wrap">
                       <label>Mã quyển</label>
-                      {isCreat ?
+                      {borrowerId > 0 ?
                         <input type="text" disabled value={copyId} onChange={(e) => setCopyId(e.target.value)} /> :
                         <>
                           <input type="text" value={copyId} onChange={(e) => setCopyId(e.target.value)} />
