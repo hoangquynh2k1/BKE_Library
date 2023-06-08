@@ -7,6 +7,9 @@ ReactModal.setAppElement("#root")
 function BookCPN() {
   const path = "https://localhost:44366/api/";
   var [books, setBooks] = useState([]);
+  var [positions, setPositions] = useState([]);
+  var [languages, setLanguages] = useState([]);
+  var [categories, setCategories] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItem, setTotalItem] = useState(1);
@@ -24,6 +27,8 @@ function BookCPN() {
   const [categoryId, setCategoryId] = useState(0);
   const [positionId, setPositionId] = useState(0);
   const [languageId, setLanguageId] = useState(0);
+  const [isCreate, setIsCreate] = useState(false);
+
   var book = {};
   var formData = {
     page: currentPage,
@@ -32,6 +37,18 @@ function BookCPN() {
   }
   useEffect(() => {
     loadData(formData)
+    axios.get(path + 'Position/Get')
+      .then((response) => {
+        setPositions(response.data)
+      })
+    axios.get(path + 'Language/Get')
+      .then((response) => {
+        setLanguages(response.data)
+      })
+    axios.get(path + 'Category/Get')
+      .then((response) => {
+        setCategories(response.data)
+      })
   }, []);
   const handlePageClick = ({ selected }) => {
     formData.page = selected + 1
@@ -43,6 +60,7 @@ function BookCPN() {
   const loadData = (data) => {
     axios.post(path + 'Book/Search', data)
       .then((response) => {
+        console.log(response.data.data);
         setBooks(response.data.data);
         setCurrentPage(response.data.page)
         setTotalItem(response.data.totalItem)
@@ -64,9 +82,22 @@ function BookCPN() {
       setPositionId(id.positionId)
       setCategoryId(id.categoryId)
       setPrice(id.price)
+      setIsCreate(false)
       setShowModal(true)
     }
     else {
+      setBookId(0)
+      setAuthor("")
+      setTitle("")
+      setPageNumber(0)
+      setDescription('')
+      setPublisher('')
+      setStatus(true)
+      setLanguageId(0)
+      setPositionId(0)
+      setCategoryId(0)
+      setPrice(0)
+      setIsCreate(true)
       setShowModal(true)
     }
   };
@@ -78,27 +109,53 @@ function BookCPN() {
       pageNumber: pageNumber,
       description: description,
       publisher: publisher,
+      categoryId: categoryId,
       languageId: languageId,
       positionId: positionId,
       categoryId: categoryId,
       price: price,
       status: status,
     }
-    axios.put(path+ 'Book/Put/' + bookId, book)
-      .then(response => {
-        if (response) {
-          const updatedItems = books.map(i => {
-            if (i.bookId === book.bookId) {
-              i = book;
-            }
-            return i;
-          });
-          setBooks(updatedItems);
-        }
-      })
-      .catch(error => {
-        console.log(error);
-      });
+    if (isCreate) {
+      axios.post(path + 'Book/Post/', book)
+        .then(response => {
+          if (response) {
+            alert("Thêm thành công!")
+            loadData(formData)
+            setShowModal(false)
+          }
+        })
+        .catch(error => {
+          console.log(error);
+        });
+
+    }
+    else {
+      axios.put(path + 'Book/Put/' + bookId, book)
+        .then(response => {
+          if (response) {
+            const updatedItems = books.map(i => {
+              if (i.bookId === book.bookId) {
+                i = book;
+              }
+              return i;
+            });
+            setBooks(updatedItems);
+            alert("Sửa thành công!")
+            setShowModal(false)
+          }
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    }
+  }
+  const showCategoryName = (id) => {
+    for(let i =0; i < categories.length; i++)
+    {
+      if(categories[i].categoryId == id)
+        return categories[i].name
+    }
   }
   return (
     <>
@@ -128,7 +185,7 @@ function BookCPN() {
                 <th>Nhà xuất bản</th>
                 <th>Số trang</th>
                 <th>Giá</th>
-                <th>Category ID</th>
+                <th>Loại sách</th>
                 <th>Status</th>
                 <th style={{ width: 100 + 'px' }}>Tác vụ</th>
               </tr>
@@ -137,13 +194,13 @@ function BookCPN() {
               {books.map((book, index) => (
                 <tr key={index} >
                   <td>{index + 1}</td>
-                  {/* <td>{book.bookId}</td> */}
                   <td>{book.title}</td>
                   <td>{book.author}</td>
                   <td>{book.publisher}</td>
                   <td>{book.pageNumber}</td>
                   <td>{book.price}</td>
-                  <td>{book.categoryId}</td>
+                  {/* <td>{book.categoryName}</td> */}
+                  <td>{showCategoryName(book.categoryId)}</td>
                   <td>{book.status ? 'Available' : 'Not Available'}</td>
                   <td>
                     <button className="update"><i className="fas fa-edit" onClick={() => openModal(book)}></i></button>
@@ -171,12 +228,21 @@ function BookCPN() {
                   <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} />
                 </div>
                 <div className="form-item">
-                  <label>Số trang</label>
-                  <input type="number" value={pageNumber} onChange={(e) => setPageNumber(e.target.value)} />
+                  <label>Thể loại</label>
+                  <select className="" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
+                  <option value={0}></option>
+                    {categories.map((category) => (
+                      <option value={category.categoryId}>{category.name}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="form-item">
                   <label>Mô tả</label>
                   <textarea type="text" value={description} onChange={(e) => setDescription(e.target.value)} />
+                </div>
+                <div className="form-item">
+                  <label>Số trang</label>
+                  <input type="number" value={pageNumber} onChange={(e) => setPageNumber(e.target.value)} />
                 </div>
               </div>
               <div className="col-6">
@@ -186,11 +252,21 @@ function BookCPN() {
                 </div>
                 <div className="form-item">
                   <label>Vị trí</label>
-                  <input type="text" value={positionId} onChange={(e) => setPositionId(e.target.value)} />
+                  <select className="" value={positionId} onChange={(e) => setPositionId(e.target.value)}>
+                  <option value={0}></option>
+                    {positions.map((position) => (
+                      <option value={position.positionId}>Kệ thứ {position.shelf} tầng thứ {position.floor}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="form-item">
                   <label>Ngôn ngữ</label>
-                  <input type="text" value={languageId} onChange={(e) => setLanguageId(e.target.value)} />
+                  <select className="" value={languageId} onChange={(e) => setLanguageId(e.target.value)}>
+                  <option value={0}></option>
+                    {languages.map((language) => (
+                      <option value={language.languageId}>{language.name} </option>
+                    ))}
+                  </select>
                 </div>
                 <div className="form-item">
                   <label>Nhà xuất bản</label>

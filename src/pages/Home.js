@@ -1,37 +1,82 @@
-import React from 'react'
+import React, {useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom';
+import axios from 'axios';
+import BookCt from '../contexts/BookCt';
+import BorrowingCt from '../contexts/BorrowingCt';
 import Borrowing from '../contexts/BorrowListCt';
 
 function Home() {
+    const path = "https://localhost:44366/api/";
+    const [isCreate, setIsCreate] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [books, setBooks] = useState([]);
+
+    const handleOpenModal = (status) => {
+        setIsModalOpen(true);
+        setIsCreate(status)
+    };
+    useEffect(() => { 
+        axios.get(path + 'Book/Get').then(response => {
+            setBooks(response.data)
+        })
+     }, []);
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+    };
+    const onSearchBook = () => {
+        var check = document.getElementById("bookct").style.display
+        if (check.length != 5)
+            document.getElementById("bookct").style.display = "block"
+        else
+            document.getElementById("bookct").style.display = "none"
+    }
     return (
         <>
             <div className="body">
+                {/* <div className="loading" id="loading">
+                    <i class="fas fa-spinner"></i>
+                </div> */}
                 <div className="home_header">
                     <img src="assets/img/logo.svg"></img>
                     <h1>Thư viện Bách khoa Education</h1>
                 </div>
                 <div className="home_content">
-
                     <div className="row">
                         <h2 style={{ marginTop: 20 + 'px', marginBottom: 20 + "px" }}>Danh sách sắp đến hạn trả sách</h2>
-                        <Borrowing></Borrowing>
+                        {/* <Borrowing></Borrowing> */}
                     </div>
                     <div className="row">
-                        <div className="col-4 button_home return">
-                            <button> <i class="fas fa-undo"></i> Trả sách</button>
-                        </div>
                         <div className="col-4 button_home search">
-                            <button> <i class="fas fa-search"></i> Tìm kiếm sách</button>
+                            <button> Thêm đầu sách</button>
                         </div>
                         <div className="col-4 button_home borrow">
-                            <button> <i class="fas fa-book-open"></i> Đăng Ký mượn sách</button>
+                            <button>  Đăng ký độc giả mới</button>
+                        </div>
+                        <div className="col-4 button_home return">
+                            <NavLink to="/dashboard"><button>  Thêm</button></NavLink>
                         </div>
                     </div>
                     <div className="row">
+                        <div className="col-4 button_home search">
+                            <button onClick={() => onSearchBook()}> <i class="fas fa-search"></i> Tìm kiếm sách</button>
+                        </div>
+                        <div className="col-4 button_home borrow">
+                            <button onClick={() => handleOpenModal(true)}> <i class="fas fa-book-open"></i> Đăng Ký mượn sách</button>
+                        </div>
+                        <div className="col-4 button_home return">
+                            <button onClick={() => handleOpenModal(false)}> <i class="fas fa-undo"></i> Trả sách</button>
+                        </div>
+                    </div>
+                    <div className="row" id="bookct">
+                        <BookCt></BookCt>
+                    </div>
+                    <div className="row" id="borrowingCt">
+                        {<BorrowingCt isCreate={isCreate} isOpen={isModalOpen} 
+                        onClose={handleCloseModal} books= {books}></BorrowingCt>}
                     </div>
                 </div>
             </div>
-           
+
         </>
     )
 }

@@ -252,7 +252,6 @@ function BorrowingCPN() {
                 <th>Ngày mượn</th>
                 <th>Tình trạng mượn</th>
                 <th>Ngày hẹn trả</th>
-                <th>Trạng Thái</th>
                 <th style={{ width: 150 + 'px' }}>Tác vụ</th>
               </tr>
             </thead>
@@ -262,10 +261,9 @@ function BorrowingCPN() {
                   <td>{index + 1}</td>
                   <td>{borrowing.name}</td>
                   <td>{formatDay(borrowing.borrowedDate)}</td>
-                  <td>{count(borrowing.details)} / {borrowing.details.length}</td>
+                  <td>{!borrowing.BorrowStatus && "Đang mượn"}</td>
                   <td>{formatDay(borrowing.appointmentDate)}-{checkOverdue(borrowing)}</td>
                   {checkOverdue(borrowing) == 1 ? "" : ""}
-                  <td>{borrowing.status ? 'Available' : 'Not Available'}</td>
                   <td>
                     <button className="update"><i className="fas fa-eye" onClick={() =>
                       openModal(borrowing)}></i></button>

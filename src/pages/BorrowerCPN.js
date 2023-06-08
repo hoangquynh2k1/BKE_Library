@@ -153,8 +153,7 @@ function BorrowerCPN() {
                                 <th>Email</th>
                                 <th>Ngày Đăng Ký</th>
                                 <th>Số Dư Tài Khoản</th>
-                                <th>Trạng Thái</th>
-                                <th style={{ width: 100 + 'px' }}>Tác vụ</th>
+                                <th style={{ width: 180 + 'px' }}>Tác vụ</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -166,7 +165,6 @@ function BorrowerCPN() {
                                     <td>{borrower.email}</td>
                                     <td>{borrower.startDay}</td>
                                     <td>{borrower.accountBalance}</td>
-                                    <td>{borrower.status ? 'Available' : 'Not Available'}</td>
                                     <td>
                                         <button className="update"><i className="fas fa-edit" onClick={() =>
                                             openModal(borrower)}></i></button>

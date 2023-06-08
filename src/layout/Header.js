@@ -24,7 +24,7 @@ function Header() {
   return (
     <div class="header">
       <div class="logo">
-        <img src="assets/img/logo_small.png"></img>
+      <img src="/assets/img/logo.svg" alt="" className="logo" />
       </div>
       <div class="navbar">
         <div class="menu">
