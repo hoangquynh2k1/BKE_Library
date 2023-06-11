@@ -8,24 +8,24 @@ const Borrowing = () => {
     const [borrowings, setBorrowings] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const [dropdownSearch, setDropdownSearch] = useState(1);
     const [totalItem, setTotalItem] = useState(1);
-    const pageSize = 10;
+    const pageSize = 5;
+    const[details, setDetails]  = useState({})
     var formData = {
         page: currentPage,
         pageSize: pageSize,
-        loc: searchQuery,
         dropdown: 1
     }
-    const customStyles = {
-        content: {
-          width: '500px', // Chỉnh kích thước chiều rộng
-          height: '300px', // Chỉnh kích thước chiều cao
-          margin: 'auto', // Căn giữa theo chiều ngang
-        }
-      };
     const [showModal, setShowModal] = useState(false);
     const [noticeContent, setNoticeContent] = useState("");
+    const customStyles = {
+        content: {
+            width: '500px', // Chỉnh kích thước chiều rộng
+            height: '300px', // Chỉnh kích thước chiều cao
+            margin: 'auto', // Căn giữa theo chiều ngang
+            'min-height': '400px'
+        }
+    };
     useEffect(() => {
         axios.post(path + 'Borrowing/CheckOverdue', formData)
             .then((response) => {
@@ -44,16 +44,39 @@ const Borrowing = () => {
                 setBorrowings(response.data.data);
                 setCurrentPage(response.data.page)
                 setTotalItem(response.data.totalItem)
+
             })
             .catch((error) => { console.log(error); });
     }
     const openModalSendNotice = (type, item) => {
+        setDetails(item)
+        console.log(details);
         if (type == "email") {
-            let content = "<h1>Thông báo sắp đến hạn trả sách</h1>"+
-            "<span>2 ngày nữa là ngày trả sách của bạn. Mong bạn trả sách đúng hẹn</span>"
-            setNoticeContent(content)
             setShowModal(true)
         }
+        else {
+
+            setShowModal(true)
+        }
+    }
+    const submit = () => {
+        axios.post(path + 'Borrowing/SendEmail/', details)
+                .then(response => {
+                    if(response.data)
+                    {
+                        const updatedItems = borrowings.map(i => {
+                            if (i.borrowingId === details.borrowingId) {
+                                i.notificationStatus = true;
+                            }
+                            return i;
+                        });
+                        setBorrowings(updatedItems)
+                        alert("Gửi thông báo thành công!")
+                        console.log(borrowings);
+                        setShowModal(false)
+                    }
+                })
+            setShowModal(true)
     }
     const formatDay = (day) => {
         if (day) {
@@ -67,6 +90,9 @@ const Borrowing = () => {
         formData.page = selected + 1;
         loadData(formData)
     };
+    const resetBorrowBook = () => {
+        setShowModal(false)
+    }
     return (
         <>
             <div className="row">
@@ -91,15 +117,15 @@ const Borrowing = () => {
                                     <td>{formatDay(borrowing.appointmentDate)}</td>
                                     {borrowing.Overdue == 1 ? <td>Sắp đến hạn</td> : <td>Quá hạn</td>}
                                     <td className="Notice">
-                                        {borrowing.notificationStatus == false ?
+                                        {borrowing.notificationStatus == false || borrowing.notificationStatus == null ?
                                             <>
-                                                <button className="update" title="Gửi email">
-                                                    <i className="fas fa-envelope" onClick={() =>
-                                                        openModalSendNotice("email",borrowing)}></i>
+                                                <button className="update" title="Gửi email" onClick={() =>
+                                                    openModalSendNotice("email", borrowing)}>
+                                                    <i className="fas fa-envelope" ></i>
                                                 </button>
                                                 <button className="update" title="Gửi tin nhắn">
                                                     <i className="fas fa-bell" onClick={() =>
-                                                        openModalSendNotice("sms",borrowing)}></i>
+                                                        openModalSendNotice("sms", borrowing)}></i>
                                                 </button>
                                             </> :
                                             <>
@@ -110,7 +136,6 @@ const Borrowing = () => {
                                                     <i className="fas fa-bell"></i>
                                                 </button>
                                             </>}
-
                                     </td>
                                 </tr>
                             ))}
@@ -124,11 +149,30 @@ const Borrowing = () => {
             </div>
             <ReactModal isOpen={showModal} onRequestClose={() => setShowModal(false)} style={customStyles}
                 contentLabel="Notice Modal">
+                <div className="modal-notice">
                     <h2>Gửi thông báo</h2>
-                    {noticeContent}
+                    <div className="row">
+                        <div className="form-item col-6">
+                            <label>Họ tên</label>
+                            <p>Hoàng Quý Quỳnh</p>
+                        </div>
+                        <div className="form-item col-6">
+                            <label>Email</label>
+                            <p>hoangquynh12a3dqh@gmail.com</p>
+                        </div>
+                        <div className="form-item">
+                            <label>Ngày hẹn trả</label>
+                            <p>hoangquynh12a3dqh@gmail.com</p>
+                        </div>
+                    </div>
+                    <div className="modal-footer">
+                        <button className="cancel" onClick={resetBorrowBook}>Hủy</button>
+                        <button className="submit" onClick={submit}>Xác nhận</button>
+                    </div>
+                </div>
+
             </ReactModal>
         </>
     )
-
 }
 export default Borrowing

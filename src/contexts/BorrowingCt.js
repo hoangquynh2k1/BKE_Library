@@ -6,7 +6,6 @@ const BorrowingCt = ({ isCreate, isOpen, onClose, books }) => {
     const path = "https://localhost:44366/api/";
     const [borrowingId, setBorrowingId] = useState(0);
     const [borrowerId, setBorrowerId] = useState(0);
-    const [staffId, setStaffId] = useState(0);
     const [borrowedDate, setBorrowedDate] = useState(Date.now);
     const [appointmentDate, setAppointmentDate] = useState(Date.now);
     const [status, setStatus] = useState(true);
@@ -14,12 +13,13 @@ const BorrowingCt = ({ isCreate, isOpen, onClose, books }) => {
     const [name, setName] = useState('');
     const [borrowingDetailId, setBorrowingDetailId] = useState(0);
     const [copyId, setCopyId] = useState(0);
-    const [bookId, setBookId] = useState(0);
+    const [title, setTitle] = useState("");
     const [durability, setDurability] = useState(0.0);
     const [description, setDescription] = useState('');
     const [bookName, setBookName] = useState('');
     const [returnDate, setReturnDate] = useState('');
     const [borrowStatus, setBorrowStatus] = useState(0);
+    const user = JSON.parse(localStorage.getItem('user'));
     var borrowing = {}
     var borrowingDetail = {}
     const resetCopyDetail = () => {
@@ -36,17 +36,10 @@ const BorrowingCt = ({ isCreate, isOpen, onClose, books }) => {
         setBorrowerId(0)
         setName("")
         setBorrowedDate(Date.now)
-        setBorrowingDetailId("")
         setAppointmentDate(Date.now)
-        setBorrowingId(0)
-        setBorrowingDetailId(0)
-        setCopyId(0)
-        setDurability(0)
-        setDescription("")
-        setReturnDate("")
-        setBorrowStatus(0)
         setDetails([])
-        setBorrowStatus(0)
+        resetCopyDetail()
+        onClose()
         setStatus(true)
     }
     const formatDay = (day) => {
@@ -59,11 +52,9 @@ const BorrowingCt = ({ isCreate, isOpen, onClose, books }) => {
             setCopyId(item.copyId)
             setDurability(item.durability)
             setDescription(item.description)
-            setReturnDate(item.returnDate)
+            setReturnDate(formatDay(appointmentDate))
             setBorrowStatus(item.borrowStatus)
-        }
-        else {
-            resetBorrowBook()
+            setBookName(item.bookName)
         }
     }
     const onCheckBorrower = () => {
@@ -89,30 +80,77 @@ const BorrowingCt = ({ isCreate, isOpen, onClose, books }) => {
         else {
             axios.get(path + 'Borrowing/Get/' + borrowerId)
                 .then((response) => {
-                    setBorrowingId(response.data.borrowingId)
-                    setName(response.data.name)
-                    setBorrowerId(response.data.borrowerId)
-                    setStatus(response.data.status)
+                    setBorrowingId(response.data.borrowingId);
+                    setName(response.data.name);
+                    setBorrowerId(response.data.borrowerId);
+                    setBorrowedDate(formatDay(response.data.borrowedDate))
+                    setAppointmentDate(formatDay(response.data.appointmentDate))
+                    const updatedDetails = response.data.details.map(async (item) => {
+                        const title = await loadTitleByCopyId(item.copyId);
+                        return { ...item, bookName: title };
+                    });
+                    Promise.all(updatedDetails).then((resolvedDetails) => {
+                        console.log(resolvedDetails);
+                        setDetails(resolvedDetails);
+                    });
+
+                    setStatus(response.data.status);
                 })
         }
     }
 
+    const loadTitleByCopyId = (copyId) => {
+        return new Promise((resolve, reject) => {
+            axios.get(path + 'Copy/Get/' + copyId)
+                .then((response) => {
+                    for (let i = 0; i < books.length; i++) {
+                        if (books[i].bookId == response.data.bookId) {
+                            resolve(books[i].title);
+                        }
+                    }
+
+                })
+                .catch((error) => {
+                    console.error(error);
+                    reject(error);
+                });
+        });
+    }
     const onCheckCopy = () => {
         if (isCreate) {
-            axios.get(path + 'Copy/Get/' + copyId).then(response => {
-                if (response.data.borrowStatus == 0) {
-                    setDurability(response.data.durability)
-                    setDescription(response.data.description)
-                    setBookId(response.data.bookId)
-                    checkBookName(response.data.bookId)
+            let existCopy = false;
+            for (let i = 0; i < details.length; i++) {
+                if (details[i].copyId == copyId) {
+                    existCopy = true
+                    break
                 }
-                else {
-                    alert("Bản sao này đang được mượn. Vui lòng chọn bản sao khác!")
-                }
-            })
+            }
+            if (existCopy) {
+                alert("Bạn đã chọn bản sao này rồi")
+            }
+            else {
+                axios.get(path + 'Copy/Get/' + copyId).then(response => {
+                    if (response.data.borrowStatus == 0 && response.data.status == true) {
+                        setDurability(response.data.durability)
+                        setDescription(response.data.description)
+                        checkBookName(response.data.bookId)
+                    }
+                    else {
+                        alert("Bản sao này không có sẵn để mượn. Vui lòng chọn bản sao khác!")
+                    }
+                })
+            }
         }
         else {
 
+        }
+    }
+    const removeCopy = (copyId) => {
+        for (let i = 0; i < details.length; i++) {
+            if (details[i].copyId == copyId) {
+                const newDetails = details.filter(item => item.copyId !== copyId);
+                setDetails(newDetails);
+            }
         }
     }
     const checkBookName = (bookId) => {
@@ -125,73 +163,125 @@ const BorrowingCt = ({ isCreate, isOpen, onClose, books }) => {
     }
     const confirmReturn = () => {
         if (isCreate) {
-            borrowingDetail = {
-                borrowingDetailId: borrowingDetailId,
-                borrowingId: borrowingId,
-                copyId: copyId,
-                durability: durability,
-                description: description,
-                borrowStatus: 1,
-                returnDate: null,
-                status: true
+            if (copyId > 0 && bookName != "") {
+                borrowingDetail = {
+                    borrowingDetailId: borrowingDetailId,
+                    borrowingId: borrowingId,
+                    copyId: copyId,
+                    durability: durability,
+                    description: description,
+                    borrowStatus: 1,
+                    returnDate: null,
+                    status: true,
+                    bookName: bookName
+                }
+                let newDetail = [...details]; // Tạo một bản sao của mảng details
+                newDetail.push(borrowingDetail); // Thêm phần tử mới vào mảng newDetail
+                setDetails(newDetail); // Cập nhật giá trị của details
+                resetCopyDetail()
             }
-            let newDetail = [...details]; // Tạo một bản sao của mảng details
-            newDetail.push(borrowingDetail); // Thêm phần tử mới vào mảng newDetail
-            setDetails(newDetail); // Cập nhật giá trị của details
-            resetCopyDetail()
+            else {
+                alert("Bạn chưa xác nhận thông tin sách muốn mượn!")
+            }
         }
         else {
-            // axios.put(path + 'BorrowingDetail/Put/' + borrowingDetailId, borrowingDetail)
-            // .then(response => {
-            //     if (response) {
-            //         const updatedItems = details.map(i => {
-            //             if (i.borrowingDetailId === borrowingDetail.borrowingDetailId) {
-            //                 i = borrowingDetail;
-            //             }
-            //             return i;
-            //         });
-            //         setDetails(updatedItems);
-            //     }
-            // })
-            // .catch(error => {
-            //     console.log(error);
-            // });
+            if (borrowStatus == 1) {
+                alert("Vui lòng chọn trạng thái cuốn sách!")
+            }
+            else {
+                borrowingDetail = {
+                    borrowingDetailId: borrowingDetailId,
+                    borrowingId: borrowingId,
+                    copyId: copyId,
+                    durability: durability,
+                    description: description,
+                    borrowStatus: 1,
+                    returnDate: returnDate,
+                    status: true,
+                    bookName: bookName,
+                    borrowStatus: borrowStatus
+                }
+                if (copyId > 0 && returnDate != null && borrowStatus > 1) {
+                    axios.put(path + 'BorrowingDetail/Put/' + borrowingDetailId, borrowingDetail)
+                        .then(response => {
+                            if (response) {
+                                const updatedItems = details.map(i => {
+                                    if (i.borrowingDetailId === borrowingDetail.borrowingDetailId) {
+                                        i = borrowingDetail;
+                                    }
+                                    return i;
+                                });
+                                setDetails(updatedItems);
+                                alert("Trả sách thành công!")
+                                resetCopyDetail()
+                            }
+                        })
+                        .catch(error => {
+                            console.log(error);
+                        });
+                }
+                else {
+                    alert("Vui lòng xác nhận lại thông tin trả sách!")
+                }
+            }
+
+
         }
     }
     const handSave = () => {
         borrowing = {
-            borrowerId: borrowerId,
+            borrowerId: parseInt(borrowerId),
             borrowingId: borrowingId,
-            staffId: staffId,
-            borrowedDate: borrowedDate,
-            appointmentDate: appointmentDate,
+            staffId: user.value.staffId,
+            borrowedDate: formatDay(borrowedDate),
+            appointmentDate: formatDay(appointmentDate),
+            notificationStatus: false,
+            overdue: 0,
             status: status,
+            name: "string",
+            details: details
         }
+        console.log(borrowedDate + "-" + appointmentDate);
+        console.log(borrowing.borrowedDate > borrowing.appointmentDate);
         if (isCreate) {
-            axios.put(path + 'Borrowing/Post/' + borrowingId, borrowing)
-                .then(response => {
-                    if (response) {
-                    }
-                })
-                .catch(error => {
-                    console.log(error);
-                });
+            if (borrowing.borrowerId < 1) {
+                alert("Thông tin độc giả không được để trống!")
+            }
+            else if (borrowing.borrowedDate >= borrowing.appointmentDate) {
+                alert("Ngày hẹn trả phải lớn hơn ngày hiện tại")
+            }
+            else if (details.length < 1) {
+                alert("Thông tin sách mượn không được để trống!")
+            }
+            else {
+                axios.post(path + 'Borrowing/Post', borrowing)
+                    .then(response => {
+                        if (response) {
+                            alert("Đăng ký mượn sách thành công!")
+                            resetBorrowBook()
+                        }
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    });
+            }
+
         }
         else {
-            axios.put(path + 'Borrowing/Put/' + borrowingId, borrowing)
-                .then(response => {
-                    if (response) {
-                    }
-                })
-                .catch(error => {
-                    console.log(error);
-                });
+            // axios.put(path + 'Borrowing/Put/' + borrowingId, borrowing)
+            //     .then(response => {
+            //         if (response) {
+            //         }
+            //     })
+            //     .catch(error => {
+            //         console.log(error);
+            //     });
         }
 
     }
     return (
         <>
-            <ReactModal isOpen={isOpen} onRequestClose={onClose}
+            <ReactModal isOpen={isOpen} onRequestClose={resetBorrowBook}
                 contentLabel="Example Modal">
                 <div className="rc-modal">
                     <div className="modal-body">
@@ -214,7 +304,8 @@ const BorrowingCt = ({ isCreate, isOpen, onClose, books }) => {
                                 </div>
                                 <div className="form-item">
                                     <label>Ngày hẹn trả</label>
-                                    <input type="date" value={formatDay(appointmentDate)} onChange={(e) => setAppointmentDate(e.target.value)} />
+                                    <input type="date" value={formatDay(appointmentDate)}
+                                        onChange={(e) => setAppointmentDate(e.target.value)} />
                                 </div>
                             </div>
                             <div className="col-8">
@@ -222,19 +313,22 @@ const BorrowingCt = ({ isCreate, isOpen, onClose, books }) => {
                                     <div className='col-6'>
                                         <div className="form-item check-wrap">
                                             <label>Mã bản sao</label>
-                                            <input type="text" value={copyId} onChange={(e) => setCopyId(e.target.value)} />
-                                            <i class="fas fa-check checK-item" onClick={() => onCheckCopy()}></i>
+                                            {isCreate ?
+                                                <><input type="text" value={copyId} onChange={(e) => setCopyId(e.target.value)} />
+                                                    <i class="fas fa-check checK-item" onClick={() => onCheckCopy()}></i></>
+                                                : <input type="text" disabled value={copyId} onChange={(e) => setCopyId(e.target.value)} />}
+
                                         </div>
                                         <div className="form-item check-wrap">
                                             <label>Tên sách</label>
-                                            <input type="text" value={bookName} />
+                                            <input type="text" disabled value={bookName} />
                                         </div>
                                         {!isCreate ? <div className="form-item">
-                                            <label>Trạng thái</label>
+                                            <label>Tình trạng sách</label>
                                             <select value={borrowStatus} onChange={(e) => setBorrowStatus(e.target.value)}>
                                                 <option value={1}></option>
                                                 <option value={2}>Đã trả</option>
-                                                <option value={3}>Làm mất</option>
+                                                {/* <option value={3}>Làm mất</option> */}
                                             </select>
                                         </div> : <></>}
                                     </div>
@@ -257,7 +351,7 @@ const BorrowingCt = ({ isCreate, isOpen, onClose, books }) => {
                                     </div>
                                 </div>
                                 <div>
-                                    <button className="btn pending" onClick={() => openCopyModal()}>Làm mới</button>
+                                    <button className="btn pending" onClick={() => resetCopyDetail()}>Làm mới</button>
                                     <button className="btn done" onClick={() => confirmReturn()}>Xác nhận</button>
 
                                 </div>
@@ -266,10 +360,11 @@ const BorrowingCt = ({ isCreate, isOpen, onClose, books }) => {
                                         <thead>
                                             <tr>
                                                 <th style={{ width: '40px', textAlign: 'center' }}>STT</th>
-                                                <th style={{ width: 80 + 'px' }}>Tên sách</th>
+                                                <th style={{ width: 200 + 'px' }}>Tên sách</th>
                                                 <th style={{ width: 80 + 'px' }}>Độ mới</th>
                                                 <th >Mô tả</th>
-                                                <th style={{ width: 180 + 'px' }}>Ngày trả</th>
+                                                <th style={{ width: 120 + 'px' }}>Ngày trả</th>
+                                                <th style={{ width: 120 + 'px' }}>Trạng thái</th>
                                                 <th style={{ width: 120 + 'px' }}>Tác vụ</th>
                                             </tr>
                                         </thead>
@@ -278,23 +373,24 @@ const BorrowingCt = ({ isCreate, isOpen, onClose, books }) => {
                                                 details.map((detail, index) => (
                                                     <tr key={index} >
                                                         <td>{index + 1}</td>
-                                                        <td>{detail.copyId}</td>
+                                                        <td>{detail.bookName}</td>
                                                         <td>{detail.durability}</td>
                                                         <td>{detail.description}</td>
-                                                        <td>{formatDay(detail.returnDate)}</td>
+                                                        <td>{detail.returnDate}</td>
+                                                        <td></td>
                                                         <td>
-                                                            <button className="btn remove" onClick={() => openCopyModal(detail)}>Xóa</button>
+                                                            <button className="btn remove" onClick={() => removeCopy(detail.copyId)}>Xóa</button>
                                                         </td>
                                                     </tr>
                                                 )) :
                                                 details.map((detail, index) => (
                                                     <tr key={index} >
                                                         <td>{index + 1}</td>
-                                                        <td>{detail.copyId}</td>
+                                                        <td>{detail.bookName}</td>
                                                         <td>{detail.durability}</td>
                                                         <td>{detail.description}</td>
-                                                        <td>{formatDay(detail.returnDate)}</td>
-                                                        {detail.borrowStatus === 1 ?
+                                                        <td>{detail.returnDate != null ? formatDay(detail.returnDate) : <></>}</td>
+                                                        {detail.returnDate == null ?
                                                             <>
                                                                 <td ><button className="info-text pending">Đang mượn</button></td>
                                                                 <td>
@@ -319,8 +415,8 @@ const BorrowingCt = ({ isCreate, isOpen, onClose, books }) => {
                         </div>
                     </div>
                     <div className="modal-footer">
-                        <button className="cancel" onClick={onClose}>Hủy</button>
-                        <button className="submit" onClick={onClose}>Xác nhận</button>
+                        <button className="cancel" onClick={resetBorrowBook}>Hủy</button>
+                        <button className="submit" onClick={() => handSave()}>Xác nhận</button>
                     </div>
                 </div>
             </ReactModal>

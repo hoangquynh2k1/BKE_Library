@@ -43,7 +43,7 @@ function Home() {
                 <div className="home_content">
                     <div className="row">
                         <h2 style={{ marginTop: 20 + 'px', marginBottom: 20 + "px" }}>Danh sách sắp đến hạn trả sách</h2>
-                        {/* <Borrowing></Borrowing> */}
+                        <Borrowing></Borrowing>
                     </div>
                     <div className="row">
                         <div className="col-4 button_home search">
