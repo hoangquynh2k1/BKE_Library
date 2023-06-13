@@ -49,7 +49,7 @@ const Login = ({setIsAuthenticated}) => {
                     </div>
                     <button type="submit" disabled={loading}> {loading ? "Loading..." : "Login"}  </button>
                 </form>
-                <a href="">Quên mật khẩu?</a>
+                <a>Quên mật khẩu?</a>
             </div>
         </div>
     );
