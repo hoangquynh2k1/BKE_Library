@@ -1,7 +1,6 @@
 .body{
     background-color: #e4f1f2;
     width: 100%;
-    height: auto;
     min-height: 1000px;
 }
 .home_header{
@@ -67,4 +66,10 @@
 }
 #bookct{
     display: none;
+}
+.img_small{
+    max-height: 80px;
+}
+.big-img{
+    max-width: 100%;
 }

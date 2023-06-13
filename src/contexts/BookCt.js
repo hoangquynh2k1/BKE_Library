@@ -4,21 +4,15 @@ import ReactModal from 'react-modal';
 import Pagination from "../components/Pagination";
 
 const BookCt = () => {
-    // const path = "http://greenlibrary.somee.com/api/";
-    const path = "https://localhost:44366/api/";
-    var [books, setBooks] = useState([]);
-    var [categories, setCategories] = useState([]);
+    const path = "http://greenlibrary.somee.com/api/";
+    // const path = "https://localhost:44366/api/";
+    const [books, setBooks] = useState([]);
+    const [categories, setCategories] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [category, setCategory] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [totalItem, setTotalItem] = useState(1);
     const pageSize = 5;
-    var formData = {
-        page: currentPage,
-        pageSize: pageSize,
-        loc: searchQuery,
-        categoryId: category
-    }
     const [bookId, setBookId] = useState(0);
     const [book, setBook] = useState(new Object);
     const [title, setTitle] = useState("");
@@ -34,58 +28,44 @@ const BookCt = () => {
     const search = () => {
         loadData(formData)
     }
+    var formData = { page: currentPage, pageSize: pageSize, loc: searchQuery, categoryId: category }
+    useEffect(() => {
+        loadData(formData)
+        axios.get(path + 'Category/Get')
+            .then((response) => {
+                setCategories(response.data)
+            })
+    }, []);
     const loadData = (data) => {
         axios.post(path + 'Book/Search', data)
             .then((response) => {
                 setBooks(response.data.data);
-                setCurrentPage(response.data.page)
-                setTotalItem(response.data.totalItem)
-                console.log(books);
+                console.log(response.data.data);
+                setCurrentPage(response.data.page);
+                setTotalItem(response.data.totalItem);
             })
-            .catch((error) => {
-                console.log(error);
-            });
+            .catch((error) => { console.log(error); });
     }
     const handlePageClick = ({ selected }) => {
         formData.page = selected + 1
         loadData(formData)
     };
     const openModal = (book) => {
-        console.log(book);
         setBook(book)
-        if (book != null) {
-            setBookId(book.bookId)
-            setAuthor(book.author)
-            setTitle(book.title)
-            // setPageNumber(book.pageNumber)
-            // setDescription(book.description)
-            setPublisher(book.publisher)
-            setStatus(book.status)
-            setLanguageId(book.languageId)
-            setPositionId(book.positionId)
-            setCategoryId(book.categorybook)
-            setPrice(book.price)
-            setShowModal(true)
-        }
-        else {
-            setShowModal(true)
-        }
+        setShowModal(true)
     };
     const onChangeCategory = (e) => {
         setCategory(e)
     }
     const onSetPath = (book) => {
-        // if(book.images != undefined)
-        //     if(book.images[0].path != undefined)
-        //         return "https://localhost:44366/api/Files?fileName=" + book.images[0].path
+        var images = []
+        images = book.images
+        if (Object.keys(book).length !== 0) {
+            if (book.images.length > 0)
+                return "http://greenlibrary.somee.com/api/Files?fileName=" + book.images[0].path
+        }
         return ""
     }
-    useEffect(() => {
-        axios.get(path + 'Category/Get')
-            .then((response) => {
-                setCategories(response.data)
-            })
-    }, []);
 
     return (
         <>
@@ -94,8 +74,8 @@ const BookCt = () => {
                     <label>Loại sách</label>
                     <select className="dropdowm_category" onChange={(e) => onChangeCategory(e.target.value)}>
                         <option value={0}></option>
-                        {categories.map((category) => (
-                            <option value={category.categoryId}>{category.name}</option>
+                        {categories.map((category, index) => (
+                            <option key={index} value={category.categoryId}>{category.name}</option>
                         ))}
                     </select>
                 </div>
@@ -103,18 +83,8 @@ const BookCt = () => {
                     <label>Tên sách</label>
                     <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
                 </div>
-                {/* <div className="form-value col-6">
-                    <label>Nhà xuất bản</label>
-                    <select className="dropdown_search" onChange={(e) => onChangeCategory(e.target.value)}>
-                        <option value={0}></option>
-                        <option value={1}>Đang mượn</option>
-                        <option value={2}>Đã trả</option>
-                        <option value={3}>Available</option>
-                        <option value={4}>Unavailable</option>
-                    </select>
-                </div> */}
                 <div className="button-form col-12">
-                    <button className="button-search" onClick={() => search()}>Tìm kiếm</button>
+                    <button className="btn" onClick={() => search()}>Tìm kiếm</button>
                 </div>
             </div>
             <div className="row">
@@ -133,22 +103,24 @@ const BookCt = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {books.map((book, index) => (
-                                <tr key={index} >
-                                    <td>{index + 1}</td>
-                                    <td>
-                                        <img className="img_small" src={onSetPath(book)} />
-                                    </td>
-                                    <td>{book.title}</td>
-                                    <td>{book.author}</td>
-                                    <td>{book.publisher}</td>
-                                    <td>{book.pageNumber}</td>
-                                    <td>{book.categoryName}</td>
-                                    <td>
-                                        <button className="update"><i className="fas fa-eye" onClick={() => openModal(book)}></i></button>
-                                    </td>
-                                </tr>
-                            ))}
+                            {books.map((book, index) => {
+                                return (
+                                    <tr key={index}>
+                                        <td>{index + 1}</td>
+                                        <td><img className="img_small" src={onSetPath(book)} /></td>
+                                        <td>{book?.title}</td>
+                                        <td>{book?.author}</td>
+                                        <td>{book?.publisher}</td>
+                                        <td>{book?.pageNumber}</td>
+                                        <td>{book?.categoryName}</td>
+                                        <td>
+                                            <button className="update">
+                                                <i className="fas fa-eye" onClick={() => openModal(book)}></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>
@@ -169,7 +141,7 @@ const BookCt = () => {
                                     <h3>{book.title}</h3>
                                 </div>
                                 <div className="form-item">
-                                    <img src={onSetPath(book)}></img>
+                                    <img className="big-img" src={onSetPath(book)}></img>
                                 </div>
                             </div>
                             <div className="col-3">
@@ -199,7 +171,7 @@ const BookCt = () => {
                             <div className="col-6">
                                 <div className="form-item">
                                     <h3>Vị trí</h3>
-                                    {/* <p>Kệ thứ {book.position.shelf} tầng thứ {book.position.floor}</p> */}
+                                    {Object.keys(book).length !== 0 &&<p>Kệ thứ { book.position.shelf} tầng thứ {book.position.floor}</p>}
                                 </div>
                             </div>
                         </div>

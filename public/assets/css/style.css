@@ -38,6 +38,12 @@ body{
 }
 .user{    width: 185px;    margin-right: 10px;}
 .user-name{    float: right;    line-height: 50px;}
+.account div{
+    padding: 8px;
+}
+.account div:hover{
+    background-color: var(--primary-color3);
+}
 .sidebar {
     width: 230px;
     float: left;
@@ -57,7 +63,10 @@ body{
     padding: 0 15px;
     box-sizing: border-box;
     min-height: calc(100vh - 50px);
-
+    overflow-y: scroll;
+}
+.box-body{
+    height: 400px;
 }
 .content .title{ margin-left: 0px; padding-top: 12px;}
 .search-form{    
@@ -237,7 +246,7 @@ tr:nth-child(even) {}
     .account{
         display: none;
         width: 200px;
-        height: 200px;
+        min-height: 100px;
         background-color: #fff;
         position: absolute;
         top: 50px;

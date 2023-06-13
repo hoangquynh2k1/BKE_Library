@@ -6,10 +6,11 @@ import BorrowingCt from '../contexts/BorrowingCt';
 import Borrowing from '../contexts/BorrowListCt';
 
 function Home() {
-    const path = "https://localhost:44366/api/";
+    const path = "http://greenlibrary.somee.com/api/";
+    // const path = "https://localhost:44366/api/";
     const [isCreate, setIsCreate] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [books, setBooks] = useState([]);
+    const [bookLists, setBookLists] = useState([]);
 
     const handleOpenModal = (status) => {
         setIsModalOpen(true);
@@ -17,7 +18,7 @@ function Home() {
     };
     useEffect(() => { 
         axios.get(path + 'Book/Get').then(response => {
-            setBooks(response.data)
+            setBookLists(response.data)
         })
      }, []);
     const handleCloseModal = () => {
@@ -72,7 +73,7 @@ function Home() {
                     </div>
                     <div className="row" id="borrowingCt">
                         {<BorrowingCt isCreate={isCreate} isOpen={isModalOpen} 
-                        onClose={handleCloseModal} books= {books}></BorrowingCt>}
+                        onClose={handleCloseModal} books= {bookLists}></BorrowingCt>}
                     </div>
                 </div>
             </div>

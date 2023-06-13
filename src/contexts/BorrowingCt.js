@@ -1,9 +1,10 @@
-import React, { Component, useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import axios from 'axios';
 import ReactModal from 'react-modal';
 
 const BorrowingCt = ({ isCreate, isOpen, onClose, books }) => {
-    const path = "https://localhost:44366/api/";
+    const path = "http://greenlibrary.somee.com/api/";
+    // const path = "https://localhost:44366/api/";
     const [borrowingId, setBorrowingId] = useState(0);
     const [borrowerId, setBorrowerId] = useState(0);
     const [borrowedDate, setBorrowedDate] = useState(Date.now);
@@ -390,7 +391,7 @@ const BorrowingCt = ({ isCreate, isOpen, onClose, books }) => {
                                                         <td>{detail.durability}</td>
                                                         <td>{detail.description}</td>
                                                         <td>{detail.returnDate != null ? formatDay(detail.returnDate) : <></>}</td>
-                                                        {detail.returnDate == null ?
+                                                        {detail.borrowStatus == 1 ?
                                                             <>
                                                                 <td ><button className="info-text pending">Đang mượn</button></td>
                                                                 <td>

@@ -6,7 +6,7 @@ import ReactModal from 'react-modal';
 ReactModal.setAppElement("#root")
 
 function CategoryCPN() {
-  const path = "https://localhost:44366/api/";
+  const path = "http://greenlibrary.somee.com/api/";
   // const path = "https://localhost:44366/api/";
   var [categorys, setCategorys] = useState([]);
   const [categoryId, setCategoryId] = useState(0);

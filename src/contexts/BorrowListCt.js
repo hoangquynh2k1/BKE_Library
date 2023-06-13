@@ -4,7 +4,8 @@ import axios from 'axios';
 import ReactModal from 'react-modal';
 
 const Borrowing = () => {
-    const path = "https://localhost:44366/api/";
+    const path = "http://greenlibrary.somee.com/api/";
+    // const path = "https://localhost:44366/api/";
     const [borrowings, setBorrowings] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
