@@ -31,6 +31,9 @@ function Home() {
         else
             document.getElementById("bookct").style.display = "none"
     }
+    const showDialog = () => {
+        alert("Chức năng đang hoàn thiện. Vui lòng chờ cập nhật sau!")
+    }
     return (
         <>
             <div className="body">
@@ -48,10 +51,10 @@ function Home() {
                     </div>
                     <div className="row">
                         <div className="col-4 button_home search">
-                            <button> Thêm đầu sách</button>
+                            <button onClick={() => showDialog()}> Thêm đầu sách</button>
                         </div>
                         <div className="col-4 button_home borrow">
-                            <button>  Đăng ký độc giả mới</button>
+                            <button onClick={() => showDialog()}>  Đăng ký độc giả mới</button>
                         </div>
                         <div className="col-4 button_home return">
                             <NavLink to="/dashboard"><button>  Thêm</button></NavLink>

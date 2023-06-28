@@ -67,6 +67,7 @@ function CategoryCPN() {
         .then((response) => {
           if(response)
           alert("Xóa thành công!")
+          loadData(formData)
         })
     }
   }

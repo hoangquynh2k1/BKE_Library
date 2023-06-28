@@ -82,7 +82,7 @@ const DashBoard = () => {
                 <div class="col-10 col-s-12">
                     <div class="box box-info">
                         <div class="box-header">
-                            <h3 class="box-title">Lượt truy cập</h3>
+                            <h3 class="box-title">Lượt mượn theo đầu sách</h3>
                         </div>
                         <div class="box-body">
                             <CustomChart type="Bar" datas={bookDatas} labels={bookLabels} label="Lượt mượn theo đầu sách"></CustomChart>

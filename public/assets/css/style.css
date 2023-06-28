@@ -105,7 +105,7 @@ body{
     margin-top: 12px;
 }
 table {    font-family: arial, sans-serif;    border-collapse: collapse;    width: 100%; }
-.table{    height: auto; min-height: 380px;}
+.table{    height: auto; min-height: 100px;}
 table tr{height: 60px; }
 th,td {border: 1px solid #dddddd;   padding: 8px;}
 th{ text-align: center; }
@@ -255,4 +255,16 @@ tr:nth-child(even) {}
     .navbar{
         position: relative;
     }
+}
+.footer{
+    height: 40px;
+    background-color: #dddddd;
+    display: flex;
+    justify-content: space-around;
+}
+.footer h4{
+    line-height: 40px;
+}
+.footer h4:hover{
+    cursor: pointer;
 }
